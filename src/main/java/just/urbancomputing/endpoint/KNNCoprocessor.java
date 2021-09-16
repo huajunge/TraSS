@@ -113,9 +113,6 @@ public class KNNCoprocessor extends KNNServer.KnnService implements Coprocessor,
                 Geometry otherTrajGeo;
                 for (Cell v : results) {
                     if (Double.MAX_VALUE != currentThreshold) {
-                        if (size >= request.getK()) {
-                            currentThreshold = trajs.peekLast()._2;
-                        }
                         if (Bytes.toString(v.getQualifier()).equals(START_POINT) && request.getFunc() == 0) {
                             //System.out.println("1");
                             Geometry geom = WKTUtils.read(Bytes.toString(v.getValue()));
@@ -195,6 +192,9 @@ public class KNNCoprocessor extends KNNServer.KnnService implements Coprocessor,
                                     if (th._1 && th._2 < currentThreshold) {
                                         trajs.add(new Tuple2<>(KNNServer.Traj.newBuilder().setTrajId("id").setTrajGeom(otherTrajGeo.toText()).setSim(th._2.floatValue()).build(), th._2));
                                         size++;
+                                        if (size >= request.getK()) {
+                                            currentThreshold = trajs.peekLast()._2;
+                                        }
                                     }
                                 }
                             }

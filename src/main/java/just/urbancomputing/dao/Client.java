@@ -20,14 +20,12 @@ import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.MultiRowRangeFilter;
 import org.apache.hadoop.hbase.ipc.BlockingRpcCallback;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.PrecisionModel;
 import scala.Tuple2;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -36,7 +34,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static just.urbancomputing.utils.Constants.*;
+import static just.urbancomputing.utils.Constants.DEFALUT_G;
+import static just.urbancomputing.utils.Constants.DEFAULT_CF;
 
 /**
  * @author : hehuajun3
@@ -272,7 +271,19 @@ public class Client {
                                 }
                             }
                             if (quadDis < currentThreshold) {
-                                double dis = Double.max(Double.max(indexSpace.dis(traj), quadDis), Double.max((e._1.xLength()) / 2.0 - traj.getXLength(), (e._1.yLength()) / 2.0 - traj.getYLength()));
+                                double dx;
+                                double dy;
+                                if (e._1.xLength() / 2.0 > traj.getXLength()) {
+                                    dx = (e._1.xLength() / 2.0 - traj.getXLength()) / 2.0;
+                                } else {
+                                    dx = (traj.getXLength() - e._1.xLength()) / 2.0;
+                                }
+                                if (e._1.yLength() / 2.0 > traj.getYLength()) {
+                                    dy = (e._1.yLength() / 2.0 - traj.getYLength()) / 2.0;
+                                } else {
+                                    dy = (traj.getYLength() - e._1.yLength()) / 2.0;
+                                }
+                                double dis = Double.max(Double.max(indexSpace.dis(traj), quadDis), Double.max(dx,dy));
                                 if (dis < currentThreshold) {
                                     searchedIS++;
                                     indexSpaces.add(new Tuple2<>(indexSpace, dis));
